@@ -63,9 +63,7 @@
 
             function saveJSONFile(str, fileName) {
                 var aEl = document.createElement('a');
-                aEl.innerHTML = 'zxc';
                 aEl.setAttribute('download', fileName);
-                //var url = 'data:application/json;base64,' + btoa(str);
                 var url = 'data:text/javascript;base64,' + btoa(str);
                 aEl.href = url;
                 document.body.appendChild(aEl);
