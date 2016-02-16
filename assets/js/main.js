@@ -20,6 +20,20 @@
         return arr;
     }
 
+    function ajax(o) {
+    	var xhr = new XMLHttpRequest();
+    	xhr.open(o.verb || 'GET', o.url, true);
+    	var cbInner = function() {
+    		if (xhr.readyState === 4 && xhr.status > 199 && xhr.status < 300) {
+    			return o.cb(null, JSON.parse(xhr.response));
+    		}
+    		o.cb('error requesting ' + o.url);
+    	};
+    	xhr.onload  = cbInner;
+    	xhr.onerror = cbInner;
+    	xhr.send(o.payload || null);
+    }
+
     var EMPTY_STRING = new Array(256+1).join(' ');
     var TILE_RES = 16;
     var SPRITE_W = 16;
@@ -57,6 +71,9 @@
         el.setAttribute('height', TILE_W);
 
         var c = el.getContext('2d');
+        c.font = 'bold 48px sans-serif';
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
 
         if (!s) {
             s = EMPTY_STRING;
@@ -84,9 +101,6 @@
 
                 if (this._lbl) {
                     c.fillStyle = '#000';
-                    c.font = 'bold 48px sans-serif';
-                    c.textAlign = 'center';
-                    c.textBaseline = 'middle';
                     c.fillText(this._lbl, TILE_W/2, TILE_W/2);
                 }
                 c.globalAlpha = 1;

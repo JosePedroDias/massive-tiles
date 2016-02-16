@@ -29,13 +29,15 @@
                 return canvasEl.toDataURL('image/png');
             }
 
-            function processImage(img) {
+            function processImage(img) { // dg_edging132.gif
                 var json = JSON.stringify({
                     1: extractSprite2Base64(img, [1, 15]), // grass
                     2: extractSprite2Base64(img, [2, 14]), // water
                     3: extractSprite2Base64(img, [5, 14]), // sand
+                    4: extractSprite2Base64(img, [4, 15])  // rocks
                 });
                 saveJSONFile(json, 'tiles.json');
+                //console.log(json);
             }
 
             function loadImageFile(inputEl, onLoad) {
@@ -61,8 +63,11 @@
 
             function saveJSONFile(str, fileName) {
                 var aEl = document.createElement('a');
+                aEl.innerHTML = 'zxc';
                 aEl.setAttribute('download', fileName);
-                //aEl.href = canvasEl.toDataURL('application/json'); // TODO
+                //var url = 'data:application/json;base64,' + btoa(str);
+                var url = 'data:text/javascript;base64,' + btoa(str);
+                aEl.href = url;
                 document.body.appendChild(aEl);
                 aEl.click();
             }
