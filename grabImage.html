@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width">
+        <title>massive tiles</title>
+    </head>
+
+    <body>
+        <input type="file" id="i">
+        <canvas id="c"></canvas>
+
+        <script>
+            var iEl = document.querySelector('#i');
+
+            loadImageFile(iEl);
+
+            var spriteW = 32;
+            var gap = 0;
+
+            function extractSprite2Base64(img, pos) {
+                var canvasEl = document.createElement('canvas');
+                canvasEl.setAttribute('width',  spriteW);
+                canvasEl.setAttribute('height', spriteW);
+                var ctx = canvasEl.getContext('2d');
+                ctx.drawImage(img, pos[0]*spriteW, pos[1]*spriteW, spriteW, spriteW, 0, 0, spriteW, spriteW);
+                document.body.appendChild(canvasEl);
+                return canvasEl.toDataURL('image/png');
+            }
+
+            function processImage(img) {
+                var json = JSON.stringify({
+                    1: extractSprite2Base64(img, [1, 15]), // grass
+                    2: extractSprite2Base64(img, [2, 14]), // water
+                    3: extractSprite2Base64(img, [5, 14]), // sand
+                });
+                saveJSONFile(json, 'tiles.json');
+            }
+
+            function loadImageFile(inputEl, onLoad) {
+                inputEl.addEventListener('change', function () {
+                    var url = URL.createObjectURL( inputEl.files[0] );
+                    var img = new Image();
+                    img.addEventListener('load', function() {
+                        processImage(img);
+                        //document.body.removeChild(img);
+                    });
+                    img.src = url;
+                    document.body.appendChild(img);
+                });
+            }
+
+            function savePngFile(canvasEl, fileName) {
+                var aEl = document.createElement('a');
+                aEl.setAttribute('download', fileName);
+                aEl.href = canvasEl.toDataURL('image/png');
+                document.body.appendChild(aEl);
+                aEl.click();
+            }
+
+            function saveJSONFile(str, fileName) {
+                var aEl = document.createElement('a');
+                aEl.setAttribute('download', fileName);
+                //aEl.href = canvasEl.toDataURL('application/json'); // TODO
+                document.body.appendChild(aEl);
+                aEl.click();
+            }
+        </script>
+    </body>
+</html>
