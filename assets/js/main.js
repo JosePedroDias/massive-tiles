@@ -44,10 +44,9 @@
     var TILE_RES_SEQ = seq(TILE_RES);
     var VIEW_W = TILE_W * 1;
 
-    var p = [0, 0];
+    var pos = [0, 0];
     var sprites = {};
     var tiles = {};
-    var tileToProcess = [];
     var values = ['1', '2', '3', '4'];
     var mainCanvas, mainCtx;
 
@@ -81,7 +80,7 @@
         el.setAttribute('height', TILE_W);
 
         var c = el.getContext('2d');
-        c.font = 'bold 48px sans-serif';
+        c.font = 'bold 100px sans-serif';
         c.textAlign = 'center';
         c.textBaseline = 'middle';
 
@@ -158,21 +157,47 @@
         seq(7).forEach(function(y) { y -= 3;
             seq(7).forEach(function(x) { x -= 3;
                 var lbl = [x, y].join(',');
-                tileToProcess.push(lbl);
                 tiles[lbl] = createRandomTile(lbl);
             });
         });
     }
 
     function drawTiles() {
-        tileToProcess.forEach(function(lbl) {
-            lbl = lbl.split(',');
-            var xy = lbl.map(function(n) { return parseInt(n, 10); });
-            var t = tiles[lbl];
-            var xx = xy[0] * TILE_W;
-            var yy = xy[1] * TILE_W;
-            mainCtx.drawImage(t._el, xx, yy);
+        var minX = Math.floor( pos[0]/TILE_RES );
+        var minY = Math.floor( pos[1]/TILE_RES );
+        var dlt = Math.ceil(VIEW_W/TILE_W); // NOT PERFECT
+        var maxX = minX + dlt;
+        var maxY = minY + dlt;
+        console.log('pos: %s   min %d %d   max %d %d', pos.join(','), minX, minY, maxX, maxY);
+        var xGap = [];
+        do {
+            xGap.push(minX);
+            ++minX;
+        } while(minX <= maxX);
+        var yGap = [];
+        do {
+            yGap.push(minY);
+            ++minY;
+        } while(minY <= maxY);
+
+        var delta = [
+            pos[0] * SPRITE_W,
+            pos[1] * SPRITE_W
+        ];
+
+        var visited = [];
+        xGap.forEach(function(x) {
+            yGap.forEach(function(y) {
+                var lbl = [x, y].join(',');
+                visited.push(lbl);
+                var t = tiles[lbl];
+                var xx = x * TILE_W - delta[0];
+                var yy = y * TILE_W - delta[1];
+                mainCtx.drawImage(t._el, xx, yy);
+            });
         });
+
+        console.log('visited: %s', visited.join(' '));
     }
 
 
@@ -180,6 +205,13 @@
     setupSprites();
     setupTiles();
     drawTiles();
+
+    window.addEventListener('keydown', function(ev) {
+        var kc = ev.keyCode;
+        if (kc === 37) { --pos[0]; } else if (kc === 39) { ++pos[0]; }
+        if (kc === 38) { --pos[1]; } else if (kc === 40) { ++pos[1]; }
+        drawTiles();
+    });
 
 
 
