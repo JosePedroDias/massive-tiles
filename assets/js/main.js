@@ -3,6 +3,10 @@
 
 
 
+    var DEBUG = true;
+
+
+
     function setupGun() {
         // auxiliary functions to apply to .val()
         w.p = function(v) { console.log(v); }; // prints to console
@@ -96,10 +100,15 @@
 
         var m = s2m(s);
 
+        movables.forEach(function(it){
+            it.tile = this;
+        });
+
         return {
             _el: el,
             _clr: randomColor(),
             _lbl: lbl,
+            _tPos: lbl.split(',').map(parseFloat),
             _m: m,
             _items: movables, // {pos, key, id}
             draw: function() {
@@ -108,8 +117,6 @@
                 TILE_RES_SEQ.forEach(function(y) {
                     TILE_RES_SEQ.forEach(function(x) {
                         var v = m[y*TILE_RES + x];
-                        //c.fillStyle = getColor(v);
-                        //c.fillRect(SPRITE_W*x, SPRITE_W*y, SPRITE_W, SPRITE_W);
                         c.drawImage(sprites[v], SPRITE_W*x, SPRITE_W*y);
                     })
                 });
@@ -121,21 +128,58 @@
                 });
 
                 // overlay tint and label for debugging purposes
-                c.globalAlpha = 0.5;
-                c.fillStyle = this._clr;
-                c.fillRect(0, 0, TILE_W, TILE_W);
+                if (DEBUG) {
+                    c.globalAlpha = 0.5;
+                    c.fillStyle = this._clr;
+                    c.fillRect(0, 0, TILE_W, TILE_W);
 
-                if (this._lbl) {
-                    c.fillStyle = '#000';
-                    c.fillText(this._lbl, TILE_W/2, TILE_W/2);
+                    if (this._lbl) {
+                        c.fillStyle = '#000';
+                        c.fillText(this._lbl, TILE_W/2, TILE_W/2);
+                    }
+                    c.globalAlpha = 1;
                 }
-                c.globalAlpha = 1;
             },
             get: function(x, y) {
                 return this._m[y*TILE_RES + x];
             },
             set: function(x, y, c) {
                 return this._m[y*TILE_RES + x] = c;
+            },
+            addItem: function(it) {
+                if (it.tile) {
+                    it.tile.removeItem(it);
+                }
+                it.tile = this;
+                this._items.push(it);
+                this.draw();
+            },
+            removeItem: function(it) {
+                var i = this._items.indexOf(it);
+                if (i !== -1) {
+                    this._items.splice(i, 1);
+                }
+                if (it.tile === this) {
+                    it.tile = undefined;
+                }
+                this.draw();
+            },
+            moveItem: function(it, dPos) {
+                var tx = this._tPos[0];
+                var ty = this._tPos[1];
+                var x = it.pos[0] + dPos[0];
+                var y = it.pos[1] + dPos[1];
+                if      (x < 0) {         --tx; x = TILE_RES - 1; }
+                else if (x >= TILE_RES) { ++tx; x = 0; }
+                if      (y < 0) {         --ty; y = TILE_RES + 1; }
+                else if (y >= TILE_RES) { ++ty; y = 0; }
+
+                var lbl2 = [tx, ty].join(',');
+                var t2 = tiles[lbl2];
+                if (!t2) { return false; }
+
+                it.pos = [x, y];
+                t2.addItem(it);
             },
             getString: function() {
                 return m2s(this._m);
@@ -189,7 +233,8 @@
         var dlt = Math.ceil(VIEW_W/TILE_W); // NOT PERFECT
         var maxX = minX + dlt;
         var maxY = minY + dlt;
-        console.log('pos: %s   min %d %d   max %d %d', pos.join(','), minX, minY, maxX, maxY);
+        //console.log('pos: %s   min %d %d   max %d %d', pos.join(','), minX, minY, maxX, maxY);
+
         var xGap = [];
         do {
             xGap.push(minX);
@@ -227,11 +272,21 @@
     setupTiles();
     drawTiles();
 
+
+
+    var hero = {key:'C', pos:[3, 3], id:'hero'};
+    tiles['0,0'].addItem(hero);
+
+
+
     window.addEventListener('keydown', function(ev) {
         var kc = ev.keyCode;
-        if (kc === 37) { --pos[0]; } else if (kc === 39) { ++pos[0]; }
-        if (kc === 38) { --pos[1]; } else if (kc === 40) { ++pos[1]; }
+        var hTile = hero.tile; // TODO FIX THIS PART
+        if (kc === 37) { --pos[0]; hTile.moveItem(hero, [-1,  0]); } else if (kc === 39) { ++pos[0]; hTile.moveItem(hero, [  1,  0]); }
+        if (kc === 38) { --pos[1]; hTile.moveItem(hero, [ 0, -1]); } else if (kc === 40) { ++pos[1]; hTile.moveItem(hero, [  0,  1]); }
         drawTiles();
+
+
     });
 
 
