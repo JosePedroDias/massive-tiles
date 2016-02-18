@@ -29,15 +29,23 @@
                 return canvasEl.toDataURL('image/png');
             }
 
-            function processImage(img) { // dg_edging132.gif
+            function processImage(img) {
                 var json = JSON.stringify({
+                    /*// dg_edging132.gif
                     1: extractSprite2Base64(img, [1, 15]), // grass
                     2: extractSprite2Base64(img, [2, 14]), // water
                     3: extractSprite2Base64(img, [5, 14]), // sand
-                    4: extractSprite2Base64(img, [4, 15])  // rocks
+                    4: extractSprite2Base64(img, [4, 15])  // rocks*/
+
+                    // dg_humans32.gif
+                    'A': extractSprite2Base64(img, [0, 0]), // archer
+                    'B': extractSprite2Base64(img, [5, 0]), // warrior
+                    'C': extractSprite2Base64(img, [2, 3]), // ninja
+                    'D': extractSprite2Base64(img, [4, 2])  // wizard
                 });
+
                 saveJSONFile(json, 'tiles.json');
-                //console.log(json);
+                console.log(json);
             }
 
             function loadImageFile(inputEl, onLoad) {

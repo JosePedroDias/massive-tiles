@@ -3,5 +3,8 @@
 
 ## TODO
 
-* allow toggling tile cells
-* draw people on top of tiles
+* grabImage:
+    * remove white from sprites
+* index:
+    * allow toggling tile cells
+    * API to move items and set cells
