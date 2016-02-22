@@ -147,11 +147,17 @@
                 return this._m[y*TILE_RES + x] = c;
             },
             addItem: function(it) {
+                if (it.tile === this) {
+                    return;
+                }
+
                 if (it.tile) {
                     it.tile.removeItem(it);
                 }
-                it.tile = this;
+
                 this._items.push(it);
+                it.tile = this;
+
                 this.draw();
             },
             removeItem: function(it) {
@@ -162,6 +168,7 @@
                 if (it.tile === this) {
                     it.tile = undefined;
                 }
+
                 this.draw();
             },
             moveItem: function(it, dPos) {
@@ -171,15 +178,29 @@
                 var y = it.pos[1] + dPos[1];
                 if      (x < 0) {         --tx; x = TILE_RES - 1; }
                 else if (x >= TILE_RES) { ++tx; x = 0; }
-                if      (y < 0) {         --ty; y = TILE_RES + 1; }
+                if      (y < 0) {         --ty; y = TILE_RES - 1; }
                 else if (y >= TILE_RES) { ++ty; y = 0; }
 
                 var lbl2 = [tx, ty].join(',');
                 var t2 = tiles[lbl2];
-                if (!t2) { return false; }
+
+                if (!t2) {
+                    this.draw();
+                    console.log('DEAD END');
+                    return false;
+                }
 
                 it.pos = [x, y];
-                t2.addItem(it);
+
+                if (t2 !== this) {
+                    console.log('SWITCH');
+                    t2.addItem(it);
+                }
+                else {
+                    this.draw();
+                }
+
+                return true;
             },
             getString: function() {
                 return m2s(this._m);
@@ -199,7 +220,7 @@
                 {pos:[2, 1], key:'B', id:'qwe'}
             ]
         );
-        t.draw()
+        t.draw();
         return t;
     }
 
@@ -270,12 +291,15 @@
 
     setupSprites();
     setupTiles();
-    drawTiles();
 
-
-
-    var hero = {key:'C', pos:[3, 3], id:'hero'};
+    var hero = {key:'C', pos:[0, 0], id:'hero'};
+    pos = [
+        hero.pos[0] - ~~(VIEW_W/SPRITE_W/2),
+        hero.pos[1] - ~~(VIEW_W/SPRITE_W/2)
+    ];
     tiles['0,0'].addItem(hero);
+
+    drawTiles();
 
 
 
@@ -285,8 +309,7 @@
         if (kc === 37) { --pos[0]; hTile.moveItem(hero, [-1,  0]); } else if (kc === 39) { ++pos[0]; hTile.moveItem(hero, [  1,  0]); }
         if (kc === 38) { --pos[1]; hTile.moveItem(hero, [ 0, -1]); } else if (kc === 40) { ++pos[1]; hTile.moveItem(hero, [  0,  1]); }
         drawTiles();
-
-
+        console.log('pos:', pos, '  hPos:', hero.pos, '  tLbl:', hTile._lbl);
     });
 
 
